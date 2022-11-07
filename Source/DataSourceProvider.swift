@@ -7,7 +7,7 @@
 //  Copyright © 2018 Victor Sigler. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 // Defines if there can be multiple cells expanded at once
 public enum NumberOfExpandedParentCells {
@@ -54,19 +54,19 @@ public final class DataSourceProvider<DataSource: DataSourceType,
     private var _tableViewDelegate: TableViewDelegate?
     
     /// The closure to be called when a Parent cell is selected
-    private let didSelectParentAtIndexPath: DidSelectParentAtIndexPathClosure?
+    private let didSelectParentAtIndexPath: DidSelectParentAtIndexPathClosure
     
     /// The closure to be called when a Child cell is selected
-    private let didSelectChildAtIndexPath: DidSelectChildAtIndexPathClosure?
+    private let didSelectChildAtIndexPath: DidSelectChildAtIndexPathClosure
     
     /// The closure to define the height of the Parent cell at the specified IndexPath
-    private let heightForParentCellAtIndexPath: HeightForParentAtIndexPathClosure?
+    private let heightForParentCellAtIndexPath: HeightForParentAtIndexPathClosure
     
     /// The closure to define the height of the Child cell at the specified IndexPath
-    private let heightForChildCellAtIndexPath: HeightForChildAtIndexPathClosure?
+    private let heightForChildCellAtIndexPath: HeightForChildAtIndexPathClosure
     
     /// The closure to be called when scrollView is scrolled
-    private let scrollViewDidScroll: ScrollViewDidScrollClosure?
+    private let scrollViewDidScroll: ScrollViewDidScrollClosure
     
     // MARK: - Initialization
     
@@ -78,11 +78,11 @@ public final class DataSourceProvider<DataSource: DataSourceType,
     public init(dataSource: DataSource,
                 parentCellConfig: ParentCellConfig,
                 childCellConfig: ChildCellConfig,
-                didSelectParentAtIndexPath: DidSelectParentAtIndexPathClosure? = nil,
-                didSelectChildAtIndexPath: DidSelectChildAtIndexPathClosure? = nil,
-                heightForParentCellAtIndexPath: HeightForParentAtIndexPathClosure? = nil,
-                heightForChildCellAtIndexPath: HeightForChildAtIndexPathClosure? = nil,
-                scrollViewDidScroll: ScrollViewDidScrollClosure? = nil,
+                didSelectParentAtIndexPath: @escaping DidSelectParentAtIndexPathClosure,
+                didSelectChildAtIndexPath: @escaping DidSelectChildAtIndexPathClosure,
+                heightForParentCellAtIndexPath: @escaping HeightForParentAtIndexPathClosure,
+                heightForChildCellAtIndexPath: @escaping HeightForChildAtIndexPathClosure,
+                scrollViewDidScroll: @escaping ScrollViewDidScrollClosure,
                 numberOfExpandedParentCells: NumberOfExpandedParentCells = .multiple
     ) {
         self.expandedParent = nil
@@ -257,7 +257,8 @@ public final class DataSourceProvider<DataSource: DataSourceType,
         
         // Scroll to the cell in case of not being visible
         if !tableView.bounds.contains(cellRect) {
-            tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+            //tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+            tableView.scrollToRow(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
         }
     }
     
@@ -340,11 +341,11 @@ extension DataSourceProvider {
             
             if isParent {
                 self.update(tableView, item, currentPosition, indexPath, parentIndex)
-                self.didSelectParentAtIndexPath?(tableView, indexPath, item)
+                self.didSelectParentAtIndexPath(tableView, indexPath, item)
             } else {
                 let index = indexPath.row - currentPosition - 1
                 let childItem = index >= 0 ? item?.children[index] : nil
-                self.didSelectChildAtIndexPath?(tableView, indexPath, childItem)
+                self.didSelectChildAtIndexPath(tableView, indexPath, childItem)
             }
         }
         
@@ -353,16 +354,16 @@ extension DataSourceProvider {
             let item = self.dataSource.item(atRow: parentIndex, inSection: indexPath.section)
             
             if isParent {
-                return self.heightForParentCellAtIndexPath?(tableView, indexPath, item) ?? 40
+                return self.heightForParentCellAtIndexPath(tableView, indexPath, item)
             }
             
             let index = indexPath.row - currentPosition - 1
             let childItem = index >= 0 ? item?.children[index] : nil
-            return self.heightForChildCellAtIndexPath?(tableView, indexPath, childItem) ?? 35
+            return self.heightForChildCellAtIndexPath(tableView, indexPath, childItem)
         }
         
         delegate.scrollViewDidScrollClosure = { [unowned self] (scrollView) -> Void in
-            self.scrollViewDidScroll?(scrollView)
+            self.scrollViewDidScroll(scrollView)
         }
         
         return delegate

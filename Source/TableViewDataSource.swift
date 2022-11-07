@@ -6,7 +6,7 @@
 //  Copyright © 2018 Victor Sigler. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 typealias NumberOfSectionsClosure = () -> Int
 typealias NumberOfItemsInSectionClosure = (Int) -> Int

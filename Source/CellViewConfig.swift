@@ -6,7 +6,7 @@
 //  Copyright © 2018 Victor Sigler. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 /// Defines a cell config type to handle a UITableViewCell
 public protocol CellViewConfigType {
@@ -32,6 +32,7 @@ extension CellViewConfigType {
     public func tableCellFor(item: Item, tableView: UITableView, indexPath: IndexPath) -> Cell {
         let reuseIdentifier = reuseIdentiferFor(item: item, indexPath: indexPath)
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! Cell
+        cell.selectionStyle = .none
         return configure(cell: cell, item: item, tableView: tableView, indexPath: indexPath)
     }
 }
